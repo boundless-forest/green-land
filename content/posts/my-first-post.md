@@ -1,9 +1,8 @@
 ---
 title: "My First Post"
 date: 2023-05-15T10:18:23+08:00
-draft: true
 tags: 
-    - tech
+    - life
 categories:
     - Development
 ---
