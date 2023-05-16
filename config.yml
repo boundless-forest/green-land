@@ -4,8 +4,8 @@ theme: 'PaperMod'
 paginate: 5
 
 # Basic metadata configuration for your blog.
-title: "Boundless Forest"
-author: "Pengfei Wang"
+title: "Green Land"
+author: "boundless-forest"
 copyright: "Copyright © 2023, bear."
 languageCode: "en-US"
 
@@ -41,18 +41,14 @@ params:
   ShareButtons: ["linkedin", "twitter"]
 
   homeInfoParams:
-        Title: "PaperMod"
+        Title: "Who am I"
         Content: >
-            Welcome to demo of hugo's theme PaperMod.
-
-            - **PaperMod** is a simple but fast and responsive theme with useful feature-set that enhances UX.
-
-            - Do give a 🌟 on Github !
-
-            - PaperMod is based on theme [Paper](https://github.com/nanxiaobei/hugo-paper).
+          As a programmer with a passion for reading, I have dedicated the past five years to honing my skills in blockchain technology, initially working with permissioned chains and later transitioning to permissionless. 
+          In my day-to-day life, I am captivated by books, particularly those that explore history and society. These works inspire me and offer valuable insights into historical events. 
+          I created this website to share my thoughts and ideas, with the hope that they may prove helpful to others.
 
   socialIcons:
     - name: "Github"
-      url: "https://github.com/adityatelange/hugo-PaperMod"
+      url: "https://github.com/boundless-forest"
     - name: "twitter"
       url: "https://twitter.com/boundless87"
