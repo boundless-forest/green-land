@@ -71,3 +71,53 @@ The chatGPT answer:
     - The parachain would need to split the transactions into smaller blocks, adhering to the 5M size limit, and submit them separately for validation.
 
 # PoV Creation And Verification
+
+![PoV Creation And Verification](/pov-creation-verification.png)
+
+When a parachain collator is set up and running, it will collect and validate the extrinsics of the network and pack these legitimation extrinsics into a block, just as the standalone substrate chain validator does. In addition, the parachain collator requires a further step to collect the `storage_proof`. The whole process is done in the `start_collator() -> produce_candidate()`, you can dig it deeper if you are interested.
+
+Once the `ParachainBlockData` has been created by the callator, the next step is wrap the data into the `CollationGenerationMessage` message, which is one of the message types in the Relay Chain [Overseer](https://paritytech.github.io/polkadot/book/node/overseer.html) protocol. Once the messages are received in the Relay Chain, the validators who responsible for validating this parachain candidate are online and ready to go. There are two other message types involved in triggering this validation, namely `ValidateFromChainState` or `ValidateFromExhaustive`. 
+
+```rs
+/// Does basic checks of a candidate. Provide the encoded PoV-block. Returns `Ok` if basic checks
+/// are passed, `Err` otherwise.
+fn perform_basic_checks(
+	candidate: &CandidateDescriptor,
+	max_pov_size: u32,
+	pov: &PoV,
+	validation_code_hash: &ValidationCodeHash,
+) -> Result<(), InvalidCandidate> {
+	let pov_hash = pov.hash();
+
+	let encoded_pov_size = pov.encoded_size();
+	if encoded_pov_size > max_pov_size as usize {      // here
+		return Err(InvalidCandidate::ParamsTooLarge(encoded_pov_size as u64))
+	}
+
+	if pov_hash != candidate.pov_hash {
+		return Err(InvalidCandidate::PoVHashMismatch)
+	}
+
+	if *validation_code_hash != candidate.validation_code_hash {
+		return Err(InvalidCandidate::CodeHashMismatch)
+	}
+
+	if let Err(()) = candidate.check_collator_signature() {
+		return Err(InvalidCandidate::BadSignature)
+	}
+
+	Ok(())
+}
+```
+
+If the `perform_basic_checks` failed, then this parachain candidate will not to be included in the Relay Chain, and your parachain will hang. That's why the size of the parachain block candidate is important.
+
+# The size of your chain PoV?
+
+Once the block is included in the Relay Chain and finalised, the PoV is no longer required and is not stored indefinitely by the validators. Therefore, it's not currently possible to monitor the PoV size of your parachain using the Polkadot Apps or SubScan. The only clue you can get now is from the collator logs, something like this:
+
+```sh
+2022-03-21 14:48:06 [Parachain] PoV size { header: 0.181640625kb, extrinsics: 3.525390625kb, storage_proof: 4.6123046875kb }
+2022-03-21 14:48:06 [Parachain] Compressed PoV size: 7.3828125kb
+2022-03-21 14:48:06 [Parachain] Produced proof-of-validity candidate. block_hash=0x4f1e697ca979e8f00015ba04f544cb87a31aaf22867a4dd0c36c4a2a69349e09
+```
