@@ -30,10 +30,17 @@ params:
   author: boundless-forest
   ShowReadingTime: true
   ShowShareButtons: false
+  favicon: true
   ShowToc: true
   TocOpen: true
   ShowPostNavLinks: true
   ShowBreadCrumbs: true
   ShowWordCount: true
   ShareButtons: ["linkedin", "twitter"]
-  defaultTheme: light        
+  defaultTheme: light
+
+  assets:
+      disableHLJS: true
+      favicon: "favicon.ico"
+      favicon16x16:  "favicon-16x16.png"
+      favicon32x32:  "favicon-32x32.png"

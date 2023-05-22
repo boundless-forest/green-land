@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>The polkadot parachain PoV | Green Land</title>
+<meta name="keywords" content="tech">
+<meta name="description" content="Introduction If you know something about the Polkadot Parachain, you must have heard of one term: PoV. It appears in the substrate pull requests, the polkadot official docs, forum and almost everywhere the Polkadot Parachain appears. So, what is the PoV? Why does it appear so often in the ecosystem? I&rsquo;ll try to dig into a little deeper.
+What is the PoV? Once our question was clear, I easily found this helpful answer What does PoV stand for?">
+<meta name="author" content="boundless-forest">
+<link rel="canonical" href="https://green-land.space/posts/substrate-pov/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.c015d60089919916aeb933816fa210c54c819bb9b2904e79538cbdc5f4ffba55.css" integrity="sha256-wBXWAImRmRauuTOBb6IQxUyBm7mykE55U4y9xfT/ulU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://green-land.space/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://green-land.space/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://green-land.space/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://green-land.space/apple-touch-icon.png">
+<link rel="mask-icon" href="https://green-land.space/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@700&display=swap" rel="stylesheet">
+<meta property="og:title" content="The polkadot parachain PoV" />
+<meta property="og:description" content="Introduction If you know something about the Polkadot Parachain, you must have heard of one term: PoV. It appears in the substrate pull requests, the polkadot official docs, forum and almost everywhere the Polkadot Parachain appears. So, what is the PoV? Why does it appear so often in the ecosystem? I&rsquo;ll try to dig into a little deeper.
+What is the PoV? Once our question was clear, I easily found this helpful answer What does PoV stand for?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://green-land.space/posts/substrate-pov/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2023-05-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-05-15T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="The polkadot parachain PoV"/>
+<meta name="twitter:description" content="Introduction If you know something about the Polkadot Parachain, you must have heard of one term: PoV. It appears in the substrate pull requests, the polkadot official docs, forum and almost everywhere the Polkadot Parachain appears. So, what is the PoV? Why does it appear so often in the ecosystem? I&rsquo;ll try to dig into a little deeper.
+What is the PoV? Once our question was clear, I easily found this helpful answer What does PoV stand for?"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Posts",
+      "item": "https://green-land.space/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  3 ,
+      "name": "The polkadot parachain PoV",
+      "item": "https://green-land.space/posts/substrate-pov/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "The polkadot parachain PoV",
+  "name": "The polkadot parachain PoV",
+  "description": "Introduction If you know something about the Polkadot Parachain, you must have heard of one term: PoV. It appears in the substrate pull requests, the polkadot official docs, forum and almost everywhere the Polkadot Parachain appears. So, what is the PoV? Why does it appear so often in the ecosystem? I\u0026rsquo;ll try to dig into a little deeper.\nWhat is the PoV? Once our question was clear, I easily found this helpful answer What does PoV stand for?",
+  "keywords": [
+    "tech"
+  ],
+  "articleBody": "Introduction If you know something about the Polkadot Parachain, you must have heard of one term: PoV. It appears in the substrate pull requests, the polkadot official docs, forum and almost everywhere the Polkadot Parachain appears. So, what is the PoV? Why does it appear so often in the ecosystem? I’ll try to dig into a little deeper.\nWhat is the PoV? Once our question was clear, I easily found this helpful answer What does PoV stand for?, but this answer does not show what is in the PoV? just the storage trie proof? anything else? I guess it’s a bunch of encoded bytes, but what is the raw data structure?\nThe PoV structure definition:\n/// A Proof-of-Validity pub struct PoV { /// The block witness data. pub block_data: BlockData, } /// Parachain block data. /// /// Contains everything required to validate para-block, may contain block and witness data. pub struct BlockData(#[cfg_attr(feature = \"std\", serde(with = \"bytes\"))] pub Vec\u003cu8\u003e); Right, it’s a bunch of bytes indeed, the next step is to dig out the raw data:\n// The parachain block that is created by a collator. /// /// This is send as PoV (proof of validity block) to the relay-chain validators. There it will be /// passed to the parachain validation Wasm blob to be validated. #[derive(codec::Encode, codec::Decode, Clone)] pub struct ParachainBlockData\u003cB: BlockT\u003e { /// The header of the parachain block. header: B::Header, /// The extrinsics of the parachain block. extrinsics: sp_std::vec::Vec\u003cB::Extrinsic\u003e, /// The data that is required to emulate the storage accesses executed by all extrinsics. storage_proof: sp_trie::CompactProof, } Most interestingly, the PoV includes not only the storage trie proof but also the header and extrinsic. On second thought, this makes sense. The PoV is much more a generic term to describe the thing relay chain needed to verify the parachain candidate blocks, the block header and extrinsics are obviously part of it.\nPoV Size Limit According to the What does PoV stand for?:\nThe PoV has a maximum limit for parachain blocks. On Polkadot it is currently configured to 5 MB so that there are limits to how long it could take to gossip that information to the relevant Polkadot validators.\nThe Polkadot Parachain max_pov_size is now 5M. So, I have two questions:\nWhy it cannot be set to be a larger value, for example, e.g. 10M? What happens if the parachain pov size over 5M? The chatGPT answer:\nThe Proof-of-Validity (PoV) block size in Polkadot’s parachain is set to a certain limit (e.g., 5M) due to several reasons:\nScalability: One of the primary goals of Polkadot is to create a scalable network. Larger PoV blocks would require more time to process and validate, which could lead to increased latency and reduced throughput on the network. Decentralization: A larger PoV block size would increase the resource requirements for validators, making it more difficult for smaller validators to participate in the network. This could lead to a more centralized network, which goes against the core principles of Polkadot. Security: Large PoV blocks could make the network more susceptible to spam attacks, where an attacker could create a large number of transactions to congest the network and cause delays. If a parachain PoV size exceeds the 5M limit:\nThe block would be deemed invalid, and validators would not include it in the relay chain. The parachain would need to split the transactions into smaller blocks, adhering to the 5M size limit, and submit them separately for validation. PoV Creation And Verification When a parachain collator is set up and running, it will collect and validate the extrinsics of the network and pack these legitimation extrinsics into a block, just as the standalone substrate chain validator does. In addition, the parachain collator requires a further step to collect the storage_proof. The whole process is done in the start_collator() -\u003e produce_candidate(), you can dig it deeper if you are interested.\nOnce the ParachainBlockData has been created by the callator, the next step is wrap the data into the CollationGenerationMessage message, which is one of the message types in the Relay Chain Overseer protocol. Once the messages are received in the Relay Chain, the validators who responsible for validating this parachain candidate are online and ready to go. There are two other message types involved in triggering this validation, namely ValidateFromChainState or ValidateFromExhaustive.\n/// Does basic checks of a candidate. Provide the encoded PoV-block. Returns `Ok` if basic checks /// are passed, `Err` otherwise. fn perform_basic_checks( candidate: \u0026CandidateDescriptor, max_pov_size: u32, pov: \u0026PoV, validation_code_hash: \u0026ValidationCodeHash, ) -\u003e Result\u003c(), InvalidCandidate\u003e { let pov_hash = pov.hash(); let encoded_pov_size = pov.encoded_size(); if encoded_pov_size \u003e max_pov_size as usize { // here return Err(InvalidCandidate::ParamsTooLarge(encoded_pov_size as u64)) } if pov_hash != candidate.pov_hash { return Err(InvalidCandidate::PoVHashMismatch) } if *validation_code_hash != candidate.validation_code_hash { return Err(InvalidCandidate::CodeHashMismatch) } if let Err(()) = candidate.check_collator_signature() { return Err(InvalidCandidate::BadSignature) } Ok(()) } If the perform_basic_checks failed, then this parachain candidate will not to be included in the Relay Chain, and your parachain will hang. That’s why the size of the parachain block candidate is important.\nThe size of your chain PoV? Once the block is included in the Relay Chain and finalised, the PoV is no longer required and is not stored indefinitely by the validators. Therefore, it’s not currently possible to monitor the PoV size of your parachain using the Polkadot Apps or SubScan. The only clue you can get now is from the collator logs, something like this:\n2022-03-21 14:48:06 [Parachain] PoV size { header: 0.181640625kb, extrinsics: 3.525390625kb, storage_proof: 4.6123046875kb } 2022-03-21 14:48:06 [Parachain] Compressed PoV size: 7.3828125kb 2022-03-21 14:48:06 [Parachain] Produced proof-of-validity candidate. block_hash=0x4f1e697ca979e8f00015ba04f544cb87a31aaf22867a4dd0c36c4a2a69349e09 ",
+  "wordCount" : "930",
+  "inLanguage": "en",
+  "datePublished": "2023-05-15T00:00:00Z",
+  "dateModified": "2023-05-15T00:00:00Z",
+  "author":{
+    "@type": "Person",
+    "name": "boundless-forest"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://green-land.space/posts/substrate-pov/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Green Land",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://green-land.space/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://green-land.space" accesskey="h" title="Green Land (Alt + H)">Green Land</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://green-land.space/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://green-land.space">Home</a>&nbsp;»&nbsp;<a href="https://green-land.space/posts/">Posts</a></div>
+    <h1 class="post-title">
+      The polkadot parachain PoV
+    </h1>
+    <div class="post-meta"><span title='2023-05-15 00:00:00 +0000 UTC'>May 15, 2023</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;930 words&nbsp;·&nbsp;boundless-forest
+
+</div>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#introduction" aria-label="Introduction">Introduction</a></li>
+                <li>
+                    <a href="#what-is-the-pov" aria-label="What is the PoV?">What is the PoV?</a></li>
+                <li>
+                    <a href="#pov-size-limit" aria-label="PoV Size Limit">PoV Size Limit</a></li>
+                <li>
+                    <a href="#pov-creation-and-verification" aria-label="PoV Creation And Verification">PoV Creation And Verification</a></li>
+                <li>
+                    <a href="#the-size-of-your-chain-pov" aria-label="The size of your chain PoV?">The size of your chain PoV?</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="introduction">Introduction<a hidden class="anchor" aria-hidden="true" href="#introduction">#</a></h1>
+<p>If you know something about the Polkadot Parachain, you must have heard of one term: <code>PoV</code>. It appears in the substrate pull requests, the polkadot official docs, forum and almost everywhere the Polkadot Parachain appears. So, what is the PoV? Why does it appear so often in the ecosystem? I&rsquo;ll try to dig into a little deeper.</p>
+<h1 id="what-is-the-pov">What is the PoV?<a hidden class="anchor" aria-hidden="true" href="#what-is-the-pov">#</a></h1>
+<p>Once our question was clear, I easily found this helpful answer <a href="https://substrate.stackexchange.com/questions/518/what-does-pov-stand-for">What does PoV stand for?</a>, but this answer does not show what is in the PoV? just the storage trie proof? anything else? I guess it&rsquo;s a bunch of encoded bytes, but what is the raw data structure?</p>
+<p>The PoV structure definition:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#e6db74">/// A Proof-of-Validity
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">PoV</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">/// The block witness data.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>	<span style="color:#66d9ef">pub</span> block_data: <span style="color:#a6e22e">BlockData</span>,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">/// Parachain block data.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">///
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">/// Contains everything required to validate para-block, may contain block and witness data.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">BlockData</span>(<span style="color:#75715e">#[cfg_attr(feature = </span><span style="color:#e6db74">&#34;std&#34;</span><span style="color:#75715e">, serde(with = </span><span style="color:#e6db74">&#34;bytes&#34;</span><span style="color:#75715e">))]</span> <span style="color:#66d9ef">pub</span> Vec<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u8</span><span style="color:#f92672">&gt;</span>);
+</span></span></code></pre></div><p>Right, it&rsquo;s a bunch of bytes indeed, the next step is to dig out the raw data:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#75715e">// The parachain block that is created by a collator.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#e6db74">///
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">/// This is send as PoV (proof of validity block) to the relay-chain validators. There it will be
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">/// passed to the parachain validation Wasm blob to be validated.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(codec::Encode, codec::Decode, Clone)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">ParachainBlockData</span><span style="color:#f92672">&lt;</span>B: <span style="color:#a6e22e">BlockT</span><span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">/// The header of the parachain block.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>	header: <span style="color:#a6e22e">B</span>::Header,
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">/// The extrinsics of the parachain block.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>	extrinsics: <span style="color:#a6e22e">sp_std</span>::vec::Vec<span style="color:#f92672">&lt;</span>B::Extrinsic<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">/// The data that is required to emulate the storage accesses executed by all extrinsics.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>	storage_proof: <span style="color:#a6e22e">sp_trie</span>::CompactProof,
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Most interestingly, the PoV includes not only the storage trie proof but also the header and extrinsic. On second thought, this makes sense. The PoV is much more a generic term to describe the thing relay chain needed to verify the parachain candidate blocks, the block header and extrinsics are obviously part of it.</p>
+<h1 id="pov-size-limit">PoV Size Limit<a hidden class="anchor" aria-hidden="true" href="#pov-size-limit">#</a></h1>
+<p>According to the <a href="https://substrate.stackexchange.com/questions/518/what-does-pov-stand-for">What does PoV stand for?</a>:</p>
+<blockquote>
+<p>The PoV has a maximum limit for parachain blocks. On Polkadot it is currently configured to 5 MB so that there are limits to how long it could take to gossip that information to the relevant Polkadot validators.</p>
+</blockquote>
+<p>The Polkadot Parachain <code>max_pov_size</code> is now 5M. So, I have two questions:</p>
+<ol>
+<li>Why it cannot be set to be a larger value, for example, e.g. 10M?</li>
+<li>What happens if the parachain pov size over 5M?</li>
+</ol>
+<p>The chatGPT answer:</p>
+<ol>
+<li>
+<p>The Proof-of-Validity (PoV) block size in Polkadot&rsquo;s parachain is set to a certain limit (e.g., 5M) due to several reasons:</p>
+<ul>
+<li>Scalability: One of the primary goals of Polkadot is to create a scalable network. Larger PoV blocks would require more time to process and validate, which could lead to increased latency and reduced throughput on the network.</li>
+<li>Decentralization: A larger PoV block size would increase the resource requirements for validators, making it more difficult for smaller validators to participate in the network. This could lead to a more centralized network, which goes against the core principles of Polkadot.</li>
+<li>Security: Large PoV blocks could make the network more susceptible to spam attacks, where an attacker could create a large number of transactions to congest the network and cause delays.</li>
+</ul>
+</li>
+<li>
+<p>If a parachain PoV size exceeds the 5M limit:</p>
+<ul>
+<li>The block would be deemed invalid, and validators would not include it in the relay chain.</li>
+<li>The parachain would need to split the transactions into smaller blocks, adhering to the 5M size limit, and submit them separately for validation.</li>
+</ul>
+</li>
+</ol>
+<h1 id="pov-creation-and-verification">PoV Creation And Verification<a hidden class="anchor" aria-hidden="true" href="#pov-creation-and-verification">#</a></h1>
+<p><img loading="lazy" src="/pov-creation-verification.png" alt="PoV Creation And Verification"  />
+</p>
+<p>When a parachain collator is set up and running, it will collect and validate the extrinsics of the network and pack these legitimation extrinsics into a block, just as the standalone substrate chain validator does. In addition, the parachain collator requires a further step to collect the <code>storage_proof</code>. The whole process is done in the <code>start_collator() -&gt; produce_candidate()</code>, you can dig it deeper if you are interested.</p>
+<p>Once the <code>ParachainBlockData</code> has been created by the callator, the next step is wrap the data into the <code>CollationGenerationMessage</code> message, which is one of the message types in the Relay Chain <a href="https://paritytech.github.io/polkadot/book/node/overseer.html">Overseer</a> protocol. Once the messages are received in the Relay Chain, the validators who responsible for validating this parachain candidate are online and ready to go. There are two other message types involved in triggering this validation, namely <code>ValidateFromChainState</code> or <code>ValidateFromExhaustive</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rs" data-lang="rs"><span style="display:flex;"><span><span style="color:#e6db74">/// Does basic checks of a candidate. Provide the encoded PoV-block. Returns `Ok` if basic checks
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">/// are passed, `Err` otherwise.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">perform_basic_checks</span>(
+</span></span><span style="display:flex;"><span>	candidate: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">CandidateDescriptor</span>,
+</span></span><span style="display:flex;"><span>	max_pov_size: <span style="color:#66d9ef">u32</span>,
+</span></span><span style="display:flex;"><span>	pov: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">PoV</span>,
+</span></span><span style="display:flex;"><span>	validation_code_hash: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">ValidationCodeHash</span>,
+</span></span><span style="display:flex;"><span>) -&gt; Result<span style="color:#f92672">&lt;</span>(), InvalidCandidate<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">let</span> pov_hash <span style="color:#f92672">=</span> pov.hash();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">let</span> encoded_pov_size <span style="color:#f92672">=</span> pov.encoded_size();
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> encoded_pov_size <span style="color:#f92672">&gt;</span> max_pov_size <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">usize</span> {      <span style="color:#75715e">// here
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> Err(InvalidCandidate::ParamsTooLarge(encoded_pov_size <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">u64</span>))
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> pov_hash <span style="color:#f92672">!=</span> candidate.pov_hash {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Err(InvalidCandidate::PoVHashMismatch)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#f92672">*</span>validation_code_hash <span style="color:#f92672">!=</span> candidate.validation_code_hash {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Err(InvalidCandidate::CodeHashMismatch)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Err(()) <span style="color:#f92672">=</span> candidate.check_collator_signature() {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> Err(InvalidCandidate::BadSignature)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	Ok(())
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>If the <code>perform_basic_checks</code> failed, then this parachain candidate will not to be included in the Relay Chain, and your parachain will hang. That&rsquo;s why the size of the parachain block candidate is important.</p>
+<h1 id="the-size-of-your-chain-pov">The size of your chain PoV?<a hidden class="anchor" aria-hidden="true" href="#the-size-of-your-chain-pov">#</a></h1>
+<p>Once the block is included in the Relay Chain and finalised, the PoV is no longer required and is not stored indefinitely by the validators. Therefore, it&rsquo;s not currently possible to monitor the PoV size of your parachain using the Polkadot Apps or SubScan. The only clue you can get now is from the collator logs, something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>2022-03-21 14:48:06 <span style="color:#f92672">[</span>Parachain<span style="color:#f92672">]</span> PoV size <span style="color:#f92672">{</span> header: 0.181640625kb, extrinsics: 3.525390625kb, storage_proof: 4.6123046875kb <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>2022-03-21 14:48:06 <span style="color:#f92672">[</span>Parachain<span style="color:#f92672">]</span> Compressed PoV size: 7.3828125kb
+</span></span><span style="display:flex;"><span>2022-03-21 14:48:06 <span style="color:#f92672">[</span>Parachain<span style="color:#f92672">]</span> Produced proof-of-validity candidate. block_hash<span style="color:#f92672">=</span>0x4f1e697ca979e8f00015ba04f544cb87a31aaf22867a4dd0c36c4a2a69349e09
+</span></span></code></pre></div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://green-land.space/tags/tech/">tech</a></li>
+    </ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>Copyright © 2023, bear.</span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
